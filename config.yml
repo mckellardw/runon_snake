@@ -1,0 +1,52 @@
+## Configuration for the snakemake_template
+
+########################################################################################################
+# Run settings
+########################################################################################################
+
+## ~~~~~ sample sheets ~~~~~
+SAMPLE_SHEET_PATH: /nfs/home/dmckellar/private_utils/sample_sheets/visium/CS001-5.csv
+
+# STARsolo parameters
+CORES: 8 # how many cores to give each process (snakemake automatically parallelizes process using "snakemake -j {numTotalCores}")
+MEMLIMIT: 127000000000  # limit in bytes
+MEMLIMIT_MB: 127000     # limit in megabytes
+MEMLIMIT_GB: 127G       # mem limit for kallisto
+
+
+########################################################################################################
+# Important directory paths
+########################################################################################################
+# **Change these paths for where you want temporary (TMPDIR) and output (OUTDIR) files
+TMPDIR: ./tmp
+OUTDIR: /path/to/outdir
+
+########################################################################################################
+# Executables - file paths
+########################################################################################################
+# Imported as a dict in Snakefile - add/remove here
+EXEC:
+  BWA: bwa
+  BOWTIE2: bowtie2
+  BUSTOOLS: bustools 
+  CUTADAPT: cutadapt 
+  FASTQC: fastqc 
+  KALLISTO: kallisto
+  MIRGE: miRge3.0
+  QUALIMAP: qualimap
+  SAMTOOLS: samtools
+  STAR: STAR 
+  UMITOOLS: umi_tools
+
+########################################################################################################
+# Resources - file paths
+########################################################################################################
+FASTQC_ADAPTERS: resources/fastqc_adapters.txt 
+MIRGE_LIB: /home/dwm269/usr/bin/miRge3_Lib
+
+########################################################################################################
+# Library details
+########################################################################################################
+R1_INTERNAL_ADAPTER: "TCTTCAGCGTTCCCGAGA"
+piRNA_INDEX: '/workdir/dwm269/genomes/pirbase/mmu/gold/bowtie2/index' # bowtie2 index of piRNAs; just mouse implemented now...
+MAX_SHORT_READ_LENGTH: 34
