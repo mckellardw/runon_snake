@@ -1,54 +1,89 @@
+########################################################################################################
+# bulk_STAR_ChROseq
+#   Snakemake workflow to use STAR to align and quantify bulk nascent RNAseq datasets
+#   v1.0
+#   Written by David McKellar
+########################################################################################################
 
-########################################################################################################
-# basecall_snake
-#   Snakemake workflow to run basecalling on fast5 files...
-#   Written by David W. McKellar
-########################################################################################################
+import pdb
+import pandas as pd
+import glob
 
 
 ########################################################################################################
 # Config file
 ########################################################################################################
-configfile:'config.yaml'
+configfile: "config.yaml"
 
-########################################################################################################
-# Imports
-########################################################################################################
-import glob
-import os
-import pandas as pd
-import numpy as np
 
 ########################################################################################################
 # Directories and locations
 ########################################################################################################
-TMPDIR    = config['TMPDIR']
-OUTDIR    = config['OUTDIR']
+TMPDIR = config["TMPDIR"]
+OUTDIR = config["OUTDIR"]
 
 ########################################################################################################
 # Variables and references
 ########################################################################################################
+SAMPLES = list(pd.read_csv(config["SAMPLE_SHEET"])["sampleID"])
 
+R1_FQS = dict(zip(SAMPLES, list(pd.read_csv(config["SAMPLE_SHEET"])["fastq_R1"])))
+
+R2_FQS = dict(zip(SAMPLES, list(pd.read_csv(config["SAMPLE_SHEET"])["fastq_R2"])))
+# SAMPLE_SHEET = pd.read_csv(config['SAMPLE_SHEET']
+
+# SRR = dict(zip(SAMPLES, list(pd.read_csv(config['SAMPLE_SHEET'])['SRR'])))
+
+STAR_REF = config["STAR_REF"]
+
+### Wildcard constraints ###############################################################
+wildcard_constraints:
+    OUTDIR = config["OUTDIR"],
+    SAMPLE = "[A-Za-z0-9_-]+"
 
 ########################################################################################################
-# Executables
-########################################################################################################
-EXEC = config['EXEC']
-
-########################################################################################################
-# Pipeline
-########################################################################################################
-
 rule all:
     input:
-        # expand( # gzipped fastqs
-        #     "{sample}.fastq.gz", 
-        #     sample=glob_wildcards("{sample}.fast5").sample
-        # )
-        # expand(
-        #     "path/to/fastqs/{dir}", dir=[os.path.basename(d) for d in FAST5_DIRS]
-        # )
-        
-include: "rules/0_rule.smk"
-include: "rules/1a_rule.smk"
-include: "rules/1b_rule.smk"
+        expand(
+            "{OUTDIR}/{SAMPLE}/fastqc/{STEP}_{READ}",
+            OUTDIR=config["OUTDIR"],
+            SAMPLE=SAMPLES,
+            STEP=["preTrim","postTrim","unmapped"],
+            READ=["R1", "R2"]
+        ),  # fastQC results
+        expand(
+            "{OUTDIR}/{SAMPLE}/misc_logs/{FILE}",
+            OUTDIR=config["OUTDIR"],
+            SAMPLE=SAMPLES,
+            FILE=["cutadapt.json"]
+        ),  #
+        expand(
+            "{OUTDIR}/{SAMPLE}/star/{FILE}",
+            OUTDIR=config["OUTDIR"],
+            SAMPLE=SAMPLES,
+            FILE=["Aligned.sortedByCoord.out.bam", "Aligned.sortedByCoord.out.bam.bai", "ReadsPerGene.out.tab"]
+        ),  # STAR output(s)
+        expand(
+            "{OUTDIR}/{SAMPLE}/qualimap/qualimapReport.html",
+            OUTDIR=config["OUTDIR"],
+            SAMPLE=SAMPLES,
+        ),  # alignment QC qith qualimap
+        expand(
+            "{OUTDIR}/{SAMPLE}/star/Aligned.sortedByCoord.out_plus.bw",
+            OUTDIR=config["OUTDIR"],
+            SAMPLE=SAMPLES,
+        ),  # strand-split bigWigs
+
+
+#############################################
+## Import rules:
+#############################################
+
+include: "rules/0_utils.smk"
+include: "rules/1_fastqc.smk"
+include: "rules/2_trimming.smk"
+include: "rules/3a_star.smk"
+# include: "rules/3b_bowtie.smk" #TODO- write
+include: "rules/4_qc.smk"
+include: "rules/5_post.smk"
+# include: "rules/X_blast.smk" #TODO- update

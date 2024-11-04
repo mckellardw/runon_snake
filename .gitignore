@@ -21,3 +21,6 @@
 
 # Misc.
 .~lock.*
+
+# Folders that don't need to be tracked...
+out/*/*

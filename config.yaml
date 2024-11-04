@@ -1,0 +1,40 @@
+## Configuration for the STARsolo_10x Snakemake workflow.
+
+########################################################################################################
+# Run settings
+########################################################################################################
+
+# Sample sheet requires a sampleID, and locations of fastqs for R1 and R2
+#     For multi-lane inputs, use the following format (from STARsolo github page):
+#       --readFilesIn Read2_Lane1.fastq.gz,Read2_Lane2.fastq.gz,Read2_Lane3.fastq.gz  Read1_Lane1.fastq.gz,Read1_Lane2.fastq.gz,Read1_Lane3.fastq.gz
+
+# SAMPLE_SHEET: sample_sheet.csv
+SAMPLE_SHEET: /gpfs/commons/groups/innovation/dwm/private_utils/sample_sheets/chroseq/skm_injury-NYGC.csv
+
+# STARsolo parameters
+CORES: 8 # how many cores to give for each process (snakemake automatically parallelizes process using "snakemake -j {numTotalCores}")
+MEMLIMIT: 50000000000 # limit in bytes
+
+########################################################################################################
+# Important directory file paths
+########################################################################################################
+TMPDIR: tmp # directory for temporary files
+OUTDIR: out
+
+########################################################################################################
+# Executables - file paths
+########################################################################################################
+
+FASTX_COLLAPSER: fastx_collapser
+BLASTDB: /shared_data/genome_db/BLAST_NCBI # path to where the nt BLAST database is stored
+
+########################################################################################################
+# Resources - file paths
+########################################################################################################
+### Mouse ###
+STAR_REF: /gpfs/commons/groups/innovation/dwm/ref_snake/out/mus_musculus/genome_primary/STAR
+GENES_GTF: /gpfs/commons/groups/innovation/dwm/ref_snake/out/mus_musculus/raw/annotations_primary.gtf
+
+### Human ###
+# STAR_REF: /gpfs/commons/groups/innovation/dwm/ref_snake/out/homo_sapiens/genome_primary/STAR
+# GENES_GTF: /gpfs/commons/groups/innovation/dwm/ref_snake/out/homo_sapiens/raw/annotations_primary.gtf
